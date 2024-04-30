@@ -1,3 +1,5 @@
+import { newArrayProto } from "./array";
+
 /**
  * 数据劫持
  * @param {object} data
@@ -12,7 +14,13 @@ export function observe(data) {
 class Observer {
   constructor(data) {
     // Vue2中的数据劫持方式
-    this.observer(data);
+    /**定义不可枚举属性 */
+    Object.defineProperty(data, "__ob__", { value: this, enumerable: false });
+    if (Array.isArray(data)) {
+      //针对数组重写数组方法
+      data.__proto__ = newArrayProto;
+      this.observeArray(data);
+    } else this.observer(data);
   }
   observer(data) {
     if (data && typeof data === "object") {
@@ -21,6 +29,10 @@ class Observer {
         defineReactives(data, key, data[key]);
       });
     }
+  }
+  //监听数组中的对象
+  observeArray(data) {
+    data.forEach((item) => this.observer(item));
   }
 }
 /**
@@ -33,7 +45,7 @@ export function defineReactives(data, key, value) {
   observe(value);
   Object.defineProperty(data, key, {
     get() {
-      console.log(12);
+      console.log(key);
       return value;
     },
     set(newValue) {
