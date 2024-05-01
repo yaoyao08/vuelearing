@@ -1,7 +1,7 @@
 /**
  * 初始化Vue
  */
-import { compile2function } from "./compiler/index";
+import { compile2Function } from "./compiler/index";
 import initState from "./state";
 export function initMixin(Vue) {
   Vue.prototype._init = function (options) {
@@ -26,10 +26,10 @@ export function initMixin(Vue) {
       }
       //模板编译
       if (template) {
-        const render = compile2function(template);
+        const render = compile2Function(template);
         vm.$options.render = render;
       }
     }
-    vm.$options.render;
+    mountComponent(vm, el); //组件挂载
   };
 }
