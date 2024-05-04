@@ -17,7 +17,6 @@ methods.forEach((method) => {
     switch (method) {
       case "push":
         inserted = params;
-        console.log(inserted);
         break;
       case "splice":
         //arr.splice(0,1,{},{}...);
@@ -30,7 +29,7 @@ methods.forEach((method) => {
     if (inserted) {
       this.__ob__.observeArray(inserted);
     }
-    console.log(method);
+
     return res;
   };
 });

@@ -45,7 +45,6 @@ export function defineReactives(data, key, value) {
   observe(value);
   Object.defineProperty(data, key, {
     get() {
-      console.log(key);
       return value;
     },
     set(newValue) {

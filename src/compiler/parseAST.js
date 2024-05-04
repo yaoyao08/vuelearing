@@ -7,7 +7,7 @@ export function createElement(ast) {
   let children = parseChildren(ast);
   let code = `_c('${ast.tag}',${
     ast.attrs.length > 0 ? parseProps(ast.attrs) : "null"
-  }),${ast.children.length > 0 ? children : ""}`;
+  }${ast.children.length > 0 ? `, ${children}` : ""})`;
   return code;
 }
 /**
@@ -21,7 +21,6 @@ function parseProps(attrs) {
     //style以对象形式处理
     let styleItem = {};
     if (attr.name === "style") {
-      console.log(attr.value);
       attr.value
         .toString()
         .split(";")
@@ -67,13 +66,13 @@ function parseChild(child) {
         /**match: ["{{age}}","age"]*/
         let index = match.index;
         if (index > lastIndex) {
-          tokens.push(`"${text.slice(lastIndex, index)}"`);
+          tokens.push(`${JSON.stringify(text.slice(lastIndex, index))}`);
         }
         tokens.push(`_s(${match[1].replace(/\s/g, "")})`);
         lastIndex = index + match[0].length;
       }
       if (lastIndex < text.length) {
-        tokens.push(`"${text.slice(lastIndex)}"`);
+        tokens.push(`${JSON.stringify(text.slice(lastIndex))}`);
       }
       return `_v(${tokens.join("+")})`;
     }

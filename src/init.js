@@ -2,6 +2,7 @@
  * 初始化Vue
  */
 import { compile2Function } from "./compiler/index";
+import { mountComponent } from "./lifeCycle";
 import initState from "./state";
 export function initMixin(Vue) {
   Vue.prototype._init = function (options) {

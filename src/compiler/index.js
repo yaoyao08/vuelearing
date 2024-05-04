@@ -9,7 +9,7 @@ export function compile2Function(template) {
   //template转换为ast语法树
   let ast = parseHTML(template);
   //render方法,根据ast解析语法树
-  // let code = createElement(ast);
-  // code = `with(this){return ${code}}`;
-  return new Function(`with(this){return ${createElement(ast)}}`);
+  let code = createElement(ast);
+  code = `with(this){return ${code}}`;
+  return new Function(code);
 }
