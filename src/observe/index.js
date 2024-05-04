@@ -50,7 +50,6 @@ export function defineReactives(data, key, value) {
       if (Dep.target) {
         dep.depend(); //增加依赖
       }
-      console.log(dep);
       return value;
     },
     set(newValue) {
