@@ -1,4 +1,5 @@
-import { createElementVNode, createTextVNode } from "./vdom/index";
+import { createElementVNode, createTextVNode, patch } from "./vdom/index";
+import Watcher from "./watcher";
 
 /**
  * 生命周期函数
@@ -6,7 +7,8 @@ import { createElementVNode, createTextVNode } from "./vdom/index";
 export function mountComponent(vm, el) {
   //1.调用render产生虚拟节点，虚拟DOM，2.根据虚拟DOM生成DOM 3.DOM插入到el中
   vm.$el = el;
-  vm._update(vm._render()); //返回虚拟节点
+  const updateComponent = () => vm._update(vm._render()); //返回虚拟节点
+  const watcher = new Watcher(vm, updateComponent, true); //true表示是一个用于渲染的watcher
 }
 export function initLifeCycle(Vue) {
   Vue.prototype._update = function (vnode) {
@@ -32,45 +34,4 @@ export function initLifeCycle(Vue) {
   Vue.prototype._render = function () {
     return this.$options.render.call(this); //返回虚拟节点,with（this）给this 赋值
   };
-}
-
-export function patch(oldVnode, vnode) {
-  //初次渲染流程
-  //判断oldVnode是否为真实元素
-  const isRealElement = oldVnode.nodeType; //原生为1
-  if (isRealElement) {
-    const elm = oldVnode;
-    const parent = elm.parentNode; //获取父节点
-    //根据虚拟机节点创建真实元素
-    let newElm = createElm(vnode);
-    parent.insertBefore(newElm, elm.nextSibling);
-    parent.removeChild(elm);
-    return newElm;
-  } else {
-    //diff
-  }
-}
-function createElm(vnode) {
-  let { tag, data, children, text } = vnode;
-  if (typeof tag === "string") {
-    vnode.el = document.createElement(tag); //真实节点与虚拟节点对应，方便实现虚拟dom的diff
-    patchProps(vnode.el, data); //更新属性
-    children.forEach((child) => {
-      vnode.el.appendChild(createElm(child));
-    });
-  } else {
-    vnode.el = document.createTextNode(text);
-  }
-  return vnode.el;
-}
-function patchProps(el, props) {
-  for (const key in props) {
-    if (key === "style") {
-      for (const styleItem in props.style) {
-        el.style[styleItem] = props.style[styleItem];
-      }
-    } else {
-      el.setAttribute(key, props[key]);
-    }
-  }
 }

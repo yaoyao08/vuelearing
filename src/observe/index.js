@@ -1,3 +1,4 @@
+import Dep from "../dep";
 import { newArrayProto } from "./array";
 
 /**
@@ -43,8 +44,13 @@ class Observer {
  */
 export function defineReactives(data, key, value) {
   observe(value);
+  let dep = new Dep(); //为每一个属性创建一个依赖收集器dep
   Object.defineProperty(data, key, {
     get() {
+      if (Dep.target) {
+        dep.depend(); //增加依赖
+      }
+      console.log(dep);
       return value;
     },
     set(newValue) {
@@ -54,13 +60,14 @@ export function defineReactives(data, key, value) {
          */
         observe(value);
         value = newValue;
+        dep.notify(); //通知界面进行更新
       } else return;
     },
   });
 }
 /**
  * Proxy对对象整体进行劫持
- * @param {object} data
+ * @param {object} data 要劫持的对象
  * @returns
  */
 export function defineReactivesProxy(data) {
