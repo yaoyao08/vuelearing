@@ -1,11 +1,12 @@
 import Dep from "./dep";
+import { queueWatcher } from "./flush/index";
 
 let id = 0;
 //需要为每一个属性增加一个dep，收集依赖
 /**
  * 监听器，实现依赖收集
  */
-class Watcher {
+export default class Watcher {
   constructor(vm, fn, flag) {
     this.id = id++;
     this.renderWatcher = flag; //标记是否为用于渲染的watcher
@@ -28,8 +29,11 @@ class Watcher {
     }
   }
   update() {
-    this.get(); //重新渲染，更新
+    queueWatcher(this); //对watcher去重
+    // this.get(); //重新渲染，更新
+  }
+  run() {
+    console.log("run123");
+    this.get(); //
   }
 }
-//一个视图/组件对应n个属性、n个dep，一个watcher包含多个dep，一个dep可以在多个watcher中
-export default Watcher;

@@ -2,6 +2,7 @@
  * 初始化Vue
  */
 import { compile2Function } from "./compiler/index";
+import { nextTick } from "./flush/index";
 import { mountComponent } from "./lifeCycle";
 import initState from "./state";
 export function initMixin(Vue) {
@@ -33,4 +34,5 @@ export function initMixin(Vue) {
     }
     mountComponent(vm, el); //组件挂载
   };
+  Vue.prototype.$nextTick = nextTick;
 }
