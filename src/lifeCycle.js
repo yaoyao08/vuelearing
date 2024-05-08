@@ -35,3 +35,12 @@ export function initLifeCycle(Vue) {
     return this.$options.render.call(this); //返回虚拟节点,with（this）给this 赋值
   };
 }
+
+export function callHook(vm, hook) {
+  const handlers = vm.$options[hook];
+  if (handlers) {
+    handlers.forEach((handler) => {
+      handler.call(vm); //生命周期hook函数的this指向实例
+    });
+  }
+}

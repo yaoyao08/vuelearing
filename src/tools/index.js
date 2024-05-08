@@ -1,31 +1,32 @@
 import { flushCallbacks } from "../flush/index";
 
-/**
- * 实现异步任务降级
- */
-let timerFunction;
-if (Promise) {
-  timerFunction = (cb) => {
-    Promise.resolve().then(cb);
+//策略模式
+const strategies = {};
+const LIFECYCLE = [
+  "beforeCreate",
+  "created",
+  "beforeUpdate",
+  "beforeMount",
+  "updated",
+  "mounted",
+  "destroyed",
+  "beforeDestroy",
+];
+//钩子函数中将新旧mixin复合在一起
+LIFECYCLE.forEach((hook) => {
+  strategies[hook] = function (p, c) {
+    if (c) {
+      if (p) {
+        return p.concat(c);
+      } else {
+        return Array.isArray(c) ? c : [c];
+      }
+    } else {
+      return p;
+    }
   };
-} else if (MutationObserver) {
-  let observer = new MutationObserver(flushCallbacks);
-  let textNode = document.createTextNode(1);
-  observer.observe(textNode, {
-    characterData: true,
-  });
-  timerFunction = () => {
-    textNode.textContent = 2;
-  };
-} else if (setImmediate) {
-  timerFunction = (cb) => {
-    setImmediate(cb);
-  };
-} else {
-  timerFunction = (cb) => {
-    setTimeout(cb, 0);
-  };
-}
+});
+
 export function nextTick(cb) {
   callbacks.push(cb);
   if (!waitting) {
@@ -33,4 +34,27 @@ export function nextTick(cb) {
     waitting = true;
   }
 }
-export default timerFunction;
+/**
+ * mixin方法合并新老属性
+ * @param {object} mixinOld 旧的options
+ * @param {object} mixinNew 新的options
+ * @returns
+ */
+export function mergeOptions(mixinOld, mixinNew = {}) {
+  const options = {};
+  for (const key in mixinOld) {
+    mergeFiled(key);
+  }
+  for (const key in mixinNew) {
+    if (!mixinOld.hasOwnProperty(key)) {
+      mergeFiled(key);
+    }
+  }
+  function mergeFiled(key) {
+    //策略模式
+    if (strategies[key]) {
+      options[key] = strategies[key](mixinOld[key], mixinNew[key]);
+    } else options[key] = mixinNew[key] || mixinOld[key];
+  }
+  return options;
+}

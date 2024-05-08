@@ -3,20 +3,24 @@
  */
 import { compile2Function } from "./compiler/index";
 import { nextTick } from "./flush/index";
-import { mountComponent } from "./lifeCycle";
+import { callHook, mountComponent } from "./lifeCycle";
 import initState from "./state";
+import { mergeOptions } from "./tools/index";
 export function initMixin(Vue) {
   Vue.prototype._init = function (options) {
     const vm = this;
-    vm.$options = options || {};
+    vm.$options = mergeOptions(this.constructor.options, options);
+    callHook(vm, "beforeCreate");
     //初始化状态
     initState(vm);
+    callHook(vm, "created");
     if (vm.$options.el) {
       vm.$mount(options.el); //实现数据的挂载
     }
   };
   Vue.prototype.$mount = function (el) {
     const vm = this;
+    callHook(vm, "beforeMount");
     el = document.querySelector(el);
     if (!vm.$options.render) {
       let template;
@@ -33,6 +37,7 @@ export function initMixin(Vue) {
       }
     }
     mountComponent(vm, el); //组件挂载
+    callHook(vm, "mounted");
   };
   Vue.prototype.$nextTick = nextTick;
 }
