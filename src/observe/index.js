@@ -11,9 +11,13 @@ export function observe(data) {
   }
   //如果一个对象被劫持过，就不需要再进行劫持
   data = new Observer(data);
+  return data;
 }
 class Observer {
   constructor(data) {
+    //给对象包括数组增加收集功能
+    this.dep = new Dep();
+
     // Vue2中的数据劫持方式
     /**定义不可枚举属性 */
     Object.defineProperty(data, "__ob__", { value: this, enumerable: false });
@@ -43,12 +47,18 @@ class Observer {
  * @param {any} value
  */
 export function defineReactives(data, key, value) {
-  observe(value);
+  let childObj = observe(value);
   let dep = new Dep(); //为每一个属性创建一个依赖收集器dep
   Object.defineProperty(data, key, {
     get() {
       if (Dep.target) {
         dep.depend(); //增加依赖
+        if (childObj) {
+          childObj.dep.depend();
+          if (Array.isArray(value)) {
+            dependArray(value);
+          }
+        }
       }
       return value;
     },
@@ -80,4 +90,17 @@ export function defineReactivesProxy(data) {
       return target[propkey];
     },
   });
+}
+/**
+ * 对数组中的数组进行劫持
+ * @param {object} value 数组
+ */
+function dependArray(value) {
+  for (let i = 0; i < value.length; i++) {
+    const current = value[i];
+    value[i].__ob__ && value[i].__ob__.dep.depend();
+    if (Array.isArray(current)) {
+      dependArray(current);
+    }
+  }
 }

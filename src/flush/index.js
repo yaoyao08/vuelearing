@@ -9,7 +9,6 @@ export function queueWatcher(watcher) {
   if (!has.has(id)) {
     queue.push(watcher);
     has.add(id);
-    console.log(queue);
     if (!pending) {
       nextTick(flushSchedulerQueue);
       pending = true;
