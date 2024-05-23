@@ -1,4 +1,4 @@
-import Dep from "./dep";
+import Dep, { pushTarget, removeTarget } from "./dep";
 import { queueWatcher } from "./flush/index";
 
 let id = 0;
@@ -6,7 +6,7 @@ let id = 0;
 /**
  * 监听器，实现依赖收集
  */
-export default class Watcher {
+export class Watcher {
   constructor(vm, fn, flag) {
     this.id = id++;
     this.renderWatcher = flag; //标记是否为用于渲染的watcher
@@ -14,12 +14,20 @@ export default class Watcher {
     //为了触发fn的取值，需要先调用一次
     this.deps = []; //实现计算属性和清理工作
     this.depsId = new Set();
-    this.get();
+    this.vm = vm;
+    this.lazy = flag.lazy;
+    this.dirty = this.lazy;
+    this.lazy ? 1 : this.get();
   }
   get() {
-    Dep.target = this; //静态属性
-    this.getter();
-    Dep.target = null; //渲染完成后清空
+    pushTarget(this); //将监听器添加到dep上
+    const value = this.getter.call(this.vm);
+    removeTarget(); //渲染完成后清空
+    return value;
+  }
+  evaluate() {
+    this.value = this.get(); //获取用户函数的返回值
+    this.dirty = false;
   }
   addDep(dep) {
     if (!this.depsId.has(dep.id)) {
@@ -29,11 +37,17 @@ export default class Watcher {
     }
   }
   update() {
-    queueWatcher(this); //对watcher去重
+    if (this.lazy) this.dirty = true;
+    else queueWatcher(this); //对watcher去重
     // this.get(); //重新渲染，更新
   }
   run() {
     console.log("run123");
     this.get(); //
+  }
+  depend() {
+    this.deps.map((dep) => {
+      dep.depend();
+    });
   }
 }

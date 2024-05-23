@@ -1,5 +1,5 @@
 import { createElementVNode, createTextVNode, patch } from "./vdom/index";
-import Watcher from "./watcher";
+import { Watcher } from "./watcher";
 
 /**
  * 生命周期函数
