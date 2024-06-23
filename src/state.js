@@ -10,6 +10,7 @@ export function initState(vm) {
   const options = vm.$options || {};
   options.data && initData(vm);
   options.computed && initComputed(vm);
+  options.watch && initWatch(vm);
 }
 /**
  * 初始化data
@@ -38,7 +39,6 @@ function defineReactivesProxy(vm, data) {
   //    * @param {*} reciver Proxy实例本身
   //    */
   //   get: function (target, propkey, reciver) {
-  //     console.log(target);
   //     return target["data"][propkey];
   //   },
   // });
@@ -66,7 +66,6 @@ function initComputed(vm) {
     let userDef = computed[key];
     defineComputed(vm, key, userDef);
   }
-  console.log(computed);
 }
 let watchers;
 /**
@@ -102,4 +101,36 @@ function createComputedGetter(key) {
     }
     return watcher.value;
   };
+}
+function initWatch(vm) {
+  let watch = vm.$options.watch;
+  for (let key in watch) {
+    //字符串 数组 函数
+    // TODO判断类型
+    const handler = watch[key];
+    if (Array.isArray(handler)) {
+      for (let i = 0; i < handler.length; i++) {
+        createWatch(vm, key, handler[i]);
+      }
+    } else {
+      createWatch(vm, key, handler);
+    }
+  }
+}
+/**
+ * 处理watch字段对应的变量
+ * @param {object} vm 实例
+ * @param {string} key 键名
+ * @param {Function|string} handler 方法或方法名
+ */
+function createWatch(vm, key, handler) {
+  const type = typeof handler;
+  switch (type) {
+    case "string":
+      handler = vm[handler];
+      break;
+    default:
+      break;
+  }
+  return vm.$watch(key, handler);
 }

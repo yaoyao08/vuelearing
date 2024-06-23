@@ -6,6 +6,7 @@ import { nextTick } from "./flush/index";
 import { callHook, mountComponent } from "./lifeCycle";
 import { initState } from "./state";
 import { mergeOptions } from "./tools/index";
+import { Watcher } from "./watcher";
 export function initMixin(Vue) {
   Vue.prototype._init = function (options) {
     const vm = this;
@@ -40,4 +41,13 @@ export function initMixin(Vue) {
     callHook(vm, "mounted");
   };
   Vue.prototype.$nextTick = nextTick;
+  /**
+   * 监听
+   * @param {string|Function} expOrFn 函数或者字段名
+   * @param {Function} cb 回调函数
+   * @param {object} options 可选项
+   */
+  Vue.prototype.$watch = function (expOrFn, cb, options = {}) {
+    new Watcher(this, expOrFn, { user: true, ...options }, cb);
+  };
 }
